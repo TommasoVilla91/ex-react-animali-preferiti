@@ -1,40 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I miei animali Preferiti</title>
+
     <link rel="stylesheet" href="style.css">
+
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel">
-        const ReactApp = () => {
-            const { useState } = React;
 
+    <script type="text/babel">
+
+        const { useState } = React;
+
+        function Modal({
+            title,
+            content,
+            show = false,
+            onClose = () => { },
+            onConfirm = () => { }
+        }) {
+            return show && ReactDOM.createPortal(
+                <div className="modal-container">
+                    <div className="modal">
+                        <h2>{title}</h2>
+                        <p>{content}</p>
+                        <div>
+                            <button onClick={onClose}>Annulla</button>
+                            <button onClick={onConfirm}>Conferma</button>
+                        </div>
+                    </div>                    
+                </div>,
+                document.body
+            )
+        }
+
+        const ReactApp = () => {
+
+            const [show, setShow] = useState(false);
             const [animals, setAnimals] = useState([]);
+            const [inputValue, setInputValue] = useState("");
+
             const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
 
             const addAnimal = () => {
                 const randomIndex = Math.floor(Math.random() * animalsChoices.length);
-                
+
                 // mi deve restituire un array, con la copia dell'array di partenza + l'elemento pescato randomicamante
                 setAnimals([...animals, animalsChoices[randomIndex]]);
             }
 
+            const handleInput = () => {
+                if (inputValue.trim() !== "") {
+                    setAnimals([...animals, inputValue]);
+                    setShow(false)
+                }
+            };
+
             return (
                 <main>
-                    <button onClick={() => addAnimal()}>Aggiungi animale</button>
+                    <button onClick={() => setShow(true)}>Aggiungi animale</button>
                     <details>
                         <h1>Animali</h1>
                         <div>
                             <ul>
                                 {animals.map((animal, i) => (
                                     <li key={i}>{animal}</li>
-                                ))}                            
+                                ))}
                             </ul>
                         </div>
                     </details>
+                    <section>
+                        <div>
+                            <Modal
+                                title="Animali da aggiungere"
+                                content={
+                                    <input 
+                                        type="text" 
+                                        placeholder="Scrivi il nome di un animale"
+                                        value={inputValue}
+                                        onChange={(event) => setInputValue(event.target.value)}
+                                    />
+                                }
+                                show={show}
+                                onClose={() => setShow(false)}
+                                onConfirm={handleInput}
+                            />
+                        </div>
+                    </section>
                 </main>
             )
         }
@@ -47,18 +103,21 @@
         root.render(<ReactApp />);
     </script>
 </head>
+
 <body>
     <header>
-      <h1>I miei animali Preferiti</h1>
+        <h1>I miei animali Preferiti</h1>
     </header>
     <main>
         <figure>
             <img src="https://picsum.photos/400/300" alt="Immagine Casuale">
         </figure>
         <div class="lista-animali"></div>
+
     </main>
-      <footer>
-      <p>Creato con amore da... un collega sbadato! 🐾</p>
+    <footer>
+        <p>Creato con amore da... un collega sbadato! 🐾</p>
     </footer>
-  </body>
+</body>
+
 </html>
