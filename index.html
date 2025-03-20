@@ -27,7 +27,7 @@
                 <div className="modal-container">
                     <div className="modal">
                         <h2>{title}</h2>
-                        <p>{content}</p>
+                        <div>{content}</div>
                         <div>
                             <button onClick={onClose}>Annulla</button>
                             <button onClick={onConfirm}>Conferma</button>
@@ -43,6 +43,8 @@
             const [show, setShow] = useState(false);
             const [animals, setAnimals] = useState([]);
             const [inputValue, setInputValue] = useState("");
+            const [isLoading ,setIsLoading] = useState(false);
+            const [errorMsg, setErrorMsg] = useState('');
 
             const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
 
@@ -51,40 +53,80 @@
 
                 // mi deve restituire un array, con la copia dell'array di partenza + l'elemento pescato randomicamante
                 setAnimals([...animals, animalsChoices[randomIndex]]);
-            }
+            };
 
-            const handleInput = () => {
+            const handleInput = async() => {
+                // se l'input non è vuoto
                 if (inputValue.trim() !== "") {
-                    setAnimals([...animals, inputValue]);
-                    setShow(false)
-                }
+                    // aggiungo elemento scritto nella lista
+                    // setAnimals([...animals, inputValue]);
+
+                    setIsLoading(true);
+
+                    try {
+                        const animalResponse = await fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${inputValue}`);
+                        const [animal] = await animalResponse.json();
+                        if(!animal) {
+                            throw new Error('Animale non trovato!');
+                        }
+                        console.log(animal);
+                        
+                        const animalObj = {
+                            name: animal.name || null,
+                            decription: animal.description || null,
+                            image: animal.image || null
+                        }
+
+                        setAnimals([...animals, animalObj]);
+                        
+                    } catch(err) {
+                        console.error(err);
+                        const message = err.message === 'Animale non trovato!' ? 'Animale non trovato!' : 'Errore durante la ricerca dell\'animale';
+                        setErrorMsg(message);
+                    } finally {
+                        setIsLoading(false);
+                        setInputValue('');
+                        setShow(false);
+                    };
+                };
             };
 
             return (
                 <main>
                     <button onClick={() => setShow(true)}>Aggiungi animale</button>
                     <details>
-                        <h1>Animali</h1>
+                        <summary>Animali</summary>
                         <div>
-                            <ul>
+                            {errorMsg && <p>{errorMsg}</p>}
+                            <div>
                                 {animals.map((animal, i) => (
-                                    <li key={i}>{animal}</li>
+                                    <div key={i} className="card">
+                                        <div>
+                                            <img src={animal.image} alt={animal.name} />
+                                        </div>
+                                        <div>
+                                            <h3>{animal.name}</h3>
+                                            <p>{animal.decription}</p>
+                                        </div>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     </details>
                     <section>
                         <div>
                             <Modal
                                 title="Animali da aggiungere"
-                                content={
+                                content={<>
                                     <input 
                                         type="text" 
                                         placeholder="Scrivi il nome di un animale"
                                         value={inputValue}
+                                        // aggiorna lo stato quando l'utente scrive qualcosa
                                         onChange={(event) => setInputValue(event.target.value)}
                                     />
-                                }
+                                    {isLoading && <p>Caricando...</p>}
+                                </>}
                                 show={show}
                                 onClose={() => setShow(false)}
                                 onConfirm={handleInput}
