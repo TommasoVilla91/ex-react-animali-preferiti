@@ -10,17 +10,27 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script type="text/babel">
         const ReactApp = () => {
+            const { useState } = React;
 
-            const animals = ["Leone", "Tigre", "Elefante", "Giraffa", "Cane", "Gatto"];
+            const [animals, setAnimals] = useState([]);
+            const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
+
+            const addAnimal = () => {
+                const randomIndex = Math.floor(Math.random() * animalsChoices.length);
+                
+                // mi deve restituire un array, con la copia dell'array di partenza + l'elemento pescato randomicamante
+                setAnimals([...animals, animalsChoices[randomIndex]]);
+            }
 
             return (
                 <main>
+                    <button onClick={() => addAnimal()}>Aggiungi animale</button>
                     <details>
                         <h1>Animali</h1>
                         <div>
                             <ul>
-                                {animals.map(animal => (
-                                    <li>{animal}</li>
+                                {animals.map((animal, i) => (
+                                    <li key={i}>{animal}</li>
                                 ))}                            
                             </ul>
                         </div>
